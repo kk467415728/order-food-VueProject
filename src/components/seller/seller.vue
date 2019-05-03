@@ -47,11 +47,22 @@
         <split></split>
         <div class="live">
           <h1 class="title">商家实景</h1>
-          <span></span>
+          <div class="pic-wrapper" ref="picWrapper">
+            <ul class="pic-list" ref="picList">
+              <li class="pic-item" v-for="(pic, index) in seller.pics" :key="index">
+                <img :src="pic" width="120" height="90">
+              </li>
+            </ul>
+          </div>
         </div>
         <split></split>
         <div class="seller-info">
           <h1 class="title">商家信息</h1>
+          <ul class="info-list">
+            <li class="info-item" v-for="(info, index) in seller.infos" :key="index">
+              {{ info }}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -67,6 +78,7 @@
   import star from '../star/star'
   import split from 'components/split/split'
   import BScroll from 'better-scroll'
+  import { saveToLocal, loadFromLocal } from '../../common/js/store.js';
 
   export default {
     components:{
@@ -88,29 +100,51 @@
           'invoice',
           'guarantee'
         ],
-        collectType: false
+        // collectType: (() => {
+        //   return loadFromLocal(this.seller.id,'collect', false)
+        // }
+        // )()
+        collectType: loadFromLocal(this.seller.id,'collect', false)
       }
     },
     methods: {
       _initScroll() {
         this.menuScroll = new BScroll(this.$refs.sellerWrapper, {
           click: true
+        }),
+        this.picScroll = new BScroll(this.$refs.picWrapper, {
+          click: true,
+          scrollX: true,
+          eventPassthrough: 'vertical'
         })
       },
       handleCollect() {
         this.collectType = !this.collectType
+        saveToLocal(this.seller.id, 'collect', this.collectType)
       }
     },
     created() {
       this.$nextTick(() => {
-        this._initScroll()
+      if(this.seller.pics) {
+        let picWidth = 120;
+        let margin = 6;
+        let width = (picWidth + margin) * this.seller.pics.length - margin
+        this.$refs.picList.style.width = width + 'px'
+      }
+        this._initScroll();
       })
+    },
+    updated() {
+      if(this.seller.pics) {
+        let picWidth = 120;
+        let margin = 6;
+        let width = (picWidth + margin) * this.seller.pics.length - margin
+        this.$refs.picList.style.width = width + 'px'
+      }
     },
     computed: {
       setType() {
-        if(this.collectType) {
-          return '已收藏' 
-        } else return '未收藏'
+        return this.collectType? '已收藏' :'未收藏'
       }
     },
   }
@@ -245,6 +279,19 @@
         color rgb(7,17,27)
         line-height 28px
         margin-bottom 8px
+      .pic-wrapper
+        width 100%
+        overflow hidden
+        white-space nowrap
+        .pic-list
+          font-size 0
+          .pic-item
+            margin-right 6px
+            display inline-block
+            width 120px
+            height 90px
+            &:last-child
+              margin 0
     .seller-info
       padding 18px
       .title
@@ -252,4 +299,16 @@
         color rgb(7,17,27)
         line-height 28px
         margin-bottom 8px
+        border-bottom 1px solid rgba(7,17,27,0.1)
+      .info-list
+        font-size 0  
+        .info-item
+          border-bottom 1px solid rgba(7,17,27,0.1)
+          font-size 12px
+          font-weight 200
+          color rgb(7,17,27)
+          line-height 16px
+          padding 16px 12px
+          &:last-child
+            border none 
 </style>
