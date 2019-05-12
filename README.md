@@ -1,6 +1,8 @@
 # my-project
 
 > A Vue.js project
+前沿：
+  Vue练习项目
 
 ## Build Setup
 
